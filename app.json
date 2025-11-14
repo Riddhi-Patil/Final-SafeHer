@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "SafeHer",
+    "slug": "safeher",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "extra": {
+      "API_URL": "https://safeher-101e.onrender.com"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {},
+    "web": {}
+  }
+}
