@@ -22,6 +22,8 @@ export default function CheckInScreen() {
   const timerRef = useRef(null);
   const [contacts, setContacts] = useState([]);
   const [tick, setTick] = useState(0); // forces UI updates for countdown
+  const [inBuffer, setInBuffer] = useState(false); // whether we're in emergency buffer countdown
+  const [bufferUntilTs, setBufferUntilTs] = useState(null); // buffer countdown target
 
   useEffect(() => {
     (async () => {
@@ -35,18 +37,36 @@ export default function CheckInScreen() {
   useEffect(() => {
     if (!active) return;
     timerRef.current = setInterval(() => {
-      if (endTs && Date.now() > endTs) {
+      const now = Date.now();
+      if (endTs && now > endTs) {
         cancelCheckIn();
         return;
       }
-      if (nextDueTs && Date.now() > (nextDueTs + Number(graceMin || '0') * 60 * 1000)) {
-        triggerMissedCheckIn();
+
+      const g = Math.max(0, Number(graceMin || '0'));
+      // When main countdown reaches zero, transition into emergency buffer countdown
+      if (!inBuffer && nextDueTs && now >= nextDueTs) {
+        if (g > 0) {
+          setInBuffer(true);
+          setBufferUntilTs(nextDueTs + g * 60 * 1000);
+        } else {
+          // no buffer configured, trigger immediately
+          triggerMissedCheckIn();
+          return;
+        }
       }
+
+      // If buffer countdown has elapsed, trigger alerts
+      if (inBuffer && bufferUntilTs && now > bufferUntilTs) {
+        triggerMissedCheckIn();
+        return;
+      }
+
       // advance a tick to update countdown UI each second
       setTick((t) => (t + 1) % 1000000);
     }, 1000);
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [active, nextDueTs, graceMin, endTs]);
+  }, [active, nextDueTs, graceMin, endTs, inBuffer, bufferUntilTs]);
 
   const startCheckIn = () => {
     const i = Math.max(1, Number(intervalMin || '5'));
@@ -54,6 +74,8 @@ export default function CheckInScreen() {
     setActive(true);
     setNextDueTs(Date.now() + i * 60 * 1000);
     setEndTs(d > 0 ? Date.now() + d * 60 * 1000 : null);
+    setInBuffer(false);
+    setBufferUntilTs(null);
     Alert.alert('Check-In scheduled', 'You will be reminded to confirm.');
   };
 
@@ -64,19 +86,26 @@ export default function CheckInScreen() {
   };
 
   const snoozeFive = () => {
-    setNextDueTs((prev) => (prev ? prev + 5 * 60 * 1000 : Date.now() + 5 * 60 * 1000));
+    if (inBuffer) {
+      setBufferUntilTs((prev) => (prev ? prev + 5 * 60 * 1000 : Date.now() + 5 * 60 * 1000));
+    } else {
+      setNextDueTs((prev) => (prev ? prev + 5 * 60 * 1000 : Date.now() + 5 * 60 * 1000));
+    }
   };
 
   const cancelCheckIn = () => {
     setActive(false);
     setNextDueTs(null);
     setEndTs(null);
+    setInBuffer(false);
+    setBufferUntilTs(null);
     if (timerRef.current) clearInterval(timerRef.current);
   };
 
   const formatRemaining = () => {
-    if (!nextDueTs) return '—';
-    const diff = Math.max(0, nextDueTs - Date.now());
+    const target = inBuffer ? bufferUntilTs : nextDueTs;
+    if (!target) return '—';
+    const diff = Math.max(0, target - Date.now());
     const m = Math.floor(diff / 60000).toString().padStart(2, '0');
     const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
     return `${m}:${s}`;
@@ -163,7 +192,7 @@ export default function CheckInScreen() {
         ) : (
           <View style={styles.activeCard}>
             <Text style={styles.activeTitle}>Active Check-In</Text>
-            <Text style={styles.nextDue}>Next due in: <Text style={styles.countdown}>{formatRemaining()}</Text></Text>
+            <Text style={styles.nextDue}>{inBuffer ? 'Emergency countdown: ' : 'Next due in: '}<Text style={styles.countdown}>{formatRemaining()}</Text></Text>
             <Text style={styles.msgQuoted}>
               "{message}"
             </Text>
