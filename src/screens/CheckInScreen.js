@@ -58,8 +58,9 @@ export default function CheckInScreen() {
   };
 
   const confirmNow = () => {
-    const i = Math.max(1, Number(intervalMin || '5'));
-    setNextDueTs(Date.now() + i * 60 * 1000);
+    // On confirm, stop the active check-in and return to the input/setup view
+    cancelCheckIn();
+    Alert.alert('Check-In confirmed', 'Timer stopped. You can start a new check-in.');
   };
 
   const snoozeFive = () => {
