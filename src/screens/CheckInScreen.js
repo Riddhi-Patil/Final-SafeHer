@@ -153,33 +153,29 @@ export default function CheckInScreen() {
 
         {!active ? (
           <View style={styles.card}>
+            <Text style={styles.label}>Interval (minutes)</Text>
             <TextInput
-              placeholder="Interval (minutes)"
-              placeholderTextColor="#999"
               value={intervalMin}
               onChangeText={(t) => setIntervalMin(t.replace(/\D/g, ''))}
               keyboardType="number-pad"
               style={styles.input}
             />
+            <Text style={styles.label}>Grace Period (minutes)</Text>
             <TextInput
-              placeholder="Grace Period (minutes)"
-              placeholderTextColor="#999"
               value={graceMin}
               onChangeText={(t) => setGraceMin(t.replace(/\D/g, ''))}
               keyboardType="number-pad"
               style={styles.input}
             />
+            <Text style={styles.label}>Duration (minutes, 0 for indefinite)</Text>
             <TextInput
-              placeholder="Duration (minutes, 0 for indefinite)"
-              placeholderTextColor="#999"
               value={durationMin}
               onChangeText={(t) => setDurationMin(t.replace(/\D/g, ''))}
               keyboardType="number-pad"
               style={styles.input}
             />
+            <Text style={styles.label}>Reminder Message</Text>
             <TextInput
-              placeholder="Reminder Message"
-              placeholderTextColor="#999"
               value={message}
               onChangeText={setMessage}
               style={styles.input}
@@ -215,12 +211,13 @@ export default function CheckInScreen() {
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 24, fontWeight: 'bold', color: theme.colors.primary, marginBottom: 12, alignSelf: 'center' },
+  title: { fontSize: 24, fontWeight: 'bold', color: theme.colors.primary, marginBottom: 12, alignSelf: 'flex-start' },
   card: { ...commonStyles.card, padding: 16 },
-  input: { width: '100%', borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 10, paddingVertical: 10, paddingHorizontal: 12, marginBottom: 10, color: '#222' },
+  label: { color: theme.colors.secondaryText, fontSize: 14, marginBottom: 6 },
+  input: { width: '100%', borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 22, paddingVertical: 12, paddingHorizontal: 16, marginBottom: 16, backgroundColor: '#fff', color: '#222' },
   primaryBtn: { ...commonStyles.button, marginTop: 6 },
   primaryBtnText: { color: '#fff', fontWeight: '700' },
-  note: { color: '#777', fontSize: 12, marginTop: 8 },
+  note: { color: '#777', fontSize: 12, marginTop: 10 },
   activeCard: { ...commonStyles.card, padding: 16 },
   activeTitle: { fontSize: 18, fontWeight: '700', color: theme.colors.accent, marginBottom: 6 },
   nextDue: { fontSize: 16, color: theme.colors.text },
